@@ -1,0 +1,129 @@
+Sub Stock_Chalenge()
+    
+    Dim ws As Worksheet
+
+    For Each ws In Worksheets
+        ws.Select
+
+    'Define first table variable
+    Dim total_volume As Double
+    total_volume = 0
+
+    Dim next_ticker_first_row As Long
+    next_ticker_first_row = 2
+    
+    Dim table_row As Integer
+    table_row = 2
+
+    'Define 2nd table variables
+    Dim grt_incre As Double
+    grt_incre = -100000
+    Dim grt_incre_ticker As String
+    
+    Dim gre_decre As Double
+    grt_decre = 100000
+    Dim grt_decre_ticker As String
+    
+    Dim grt_vol As Variant
+    grt_vol = 0
+    Dim grt_vol_ticker As String
+    
+    'Make table I headers
+    Range("I1").Value = "Ticker"
+    Range("J1").Value = "Yearly Change"
+    Range("k1").Value = "Percent Change"
+    Range("L1").Value = "Total Stock Volume"
+
+    'make table II headers
+    Range("O1").Value = "Stock Analysis"
+    Range("O1").Font.Bold = True
+    Range("N2").Value = "Greatest % Increase"
+    Range("N3").Value = "Greatest % Decrease"
+    Range("N4").Value = "Greatest Total Volumn"
+    
+    lastRow = Cells(Rows.Count, "A").End(xlUp).Row
+    'MsgBox lastRow
+    
+    'Make ticker table by loop though the data provided
+    For i = 2 To lastRow
+        If Cells(i, 1).Value <> Cells(i + 1, 1).Value Then
+        
+            'add last row volume to total volume
+            total_volume = total_volume + Cells(i, 7).Value
+            
+            'fill in ticker marker in table
+            Range("I" & table_row).Value = Cells(i, 1).Value
+            
+            'fill in the Yearly Change by formula: (the last day close price of the year - the first day open price of the year)
+            Range("J" & table_row).Value = (Cells(i, 6).Value - Cells(next_ticker_first_row, 3).Value)
+            
+            'make sure the first day open price is not zero
+            If Cells(next_ticker_first_row, 3).Value <> 0 Then
+            
+            'fill in Percent Change by formula: Yearly Change / first day open price of the year
+            Range("K" & table_row).Value = Range("J" & table_row).Value / Cells(next_ticker_first_row, 3).Value
+            
+            End If
+            
+            'conditional format the Yearly Change cell color
+            If Range("J" & table_row).Value > 0 Then
+               Range("J" & table_row).Interior.ColorIndex = 10
+               Else
+               Range("J" & table_row).Interior.ColorIndex = 3
+            End If
+            
+            'fill in total trade volume
+            Range("L" & table_row).Value = total_volume
+            
+            'add one row in table
+            table_row = table_row + 1
+            
+            'reset total_volume
+            total_volume = 0
+            
+            'reset the next ticker_first_row
+            next_ticker_first_row = i + 1
+    
+        Else
+            'accumulate total volume before find next ticker
+            total_volume = total_volume + Cells(i, 7).Value
+            
+        End If
+        
+    Next i
+
+              
+    lastRow = Cells(Rows.Count, "I").End(xlUp).Row
+    'MsgBox lastRow
+            
+        For j = 3 To lastRow
+            ' find greatest percent increase
+            If grt_incre < Cells(j, 11).Value Then
+                grt_incre = Cells(j, 11).Value
+               grt_incre_ticker = Cells(j, 9).Value
+            End If
+            ' find greatest percent decrease
+            If grt_decre > Cells(j, 11).Value Then
+                grt_decre = Cells(j, 11).Value
+               grt_decre_ticker = Cells(j, 9).Value
+            End If
+            ' find greatest total volumn
+            If grt_vol < Cells(j, 12).Value Then
+                grt_vol = Cells(j, 12).Value
+               grt_vol_ticker = Cells(j, 9).Value
+            End If
+        Next j
+        
+        ' fill in the Stock Analysis table
+        Range("O2").Value = grt_incre_ticker
+        Range("P2").Value = (grt_incre * 100) & "%"
+        
+        Range("O3").Value = grt_decre_ticker
+        Range("P3").Value = (grt_decre * 100) & "%"
+        
+        Range("O4").Value = grt_vol_ticker
+        Range("P4").Value = grt_vol
+        
+    Next ws
+        
+End Sub
